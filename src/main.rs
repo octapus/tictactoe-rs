@@ -1,27 +1,6 @@
-type Board = [[[[i8; 3]; 3]; 3]; 3];
-
-fn print_board(board: &Board) {
-	for w in (0..3).rev() {
-		for y in (0..3).rev() {
-			for z in 0..3 {
-				for x in 0..3 {
-					match board[w][z][y][x] {
-						-2 => print!("O"),
-						-1 => print!("o"),
-						0 => print!("."),
-						1 => print!("x"),
-						2 => print!("X"),
-						_ => print!("?"),
-					}
-					print!(" ");
-				}
-				print!(" ");
-			}
-			println!();
-		}
-		println!();
-	}
-}
+mod board;
+use crate::board::BoardError;
+use crate::board::Board;
 
 fn handle_move(board: &mut Board, player: i8) {
 	if !(player == 1 || player == -1) {
@@ -42,21 +21,24 @@ fn handle_move(board: &mut Board, player: i8) {
 				}
 			}
 		}
-		if board[index[0]][index[1]][index[2]][index[3]] != 0 {
-			println!("That space is already taken");
-			continue 'input_loop;
+		match board.handle_move(player, index) {
+			Err(BoardError::PlayerError) => panic!("bad player {}", player),
+			Err(BoardError::MoveError) => panic!("bad move {:?}", index),
+			Err(_) => {
+				println!("That space is taken");
+				continue 'input_loop;
+			},
+			Ok(_) => break 'input_loop,
 		}
-		board[index[0]][index[1]][index[2]][index[3]] = player;
-		break;
 	}
 }
 
 fn main() {
-	let mut board: Board = [[[[0; 3]; 3]; 3]; 3];
+	let mut board = Board::new();
 	let mut player: i8 = 1;
 	loop {
 		//print!("\x1B[2J\x1B[1;1H");
-		print_board(&board);
+		board.print();
 		handle_move(&mut board, player);
 		player = -player;
 	}
