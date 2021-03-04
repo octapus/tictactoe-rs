@@ -2,7 +2,7 @@ mod board;
 use crate::board::BoardError;
 use crate::board::Board;
 
-fn handle_move(board: &mut Board, player: i8) {
+fn handle_move(board: &mut Board, player: i8) -> bool {
 	if !(player == 1 || player == -1) {
 		panic!("handle_move should only take 1 or -1");
 	}
@@ -28,7 +28,7 @@ fn handle_move(board: &mut Board, player: i8) {
 				println!("That space is taken");
 				continue 'input_loop;
 			},
-			Ok(_) => break 'input_loop,
+			Ok(term) => return term,
 		}
 	}
 }
@@ -39,7 +39,10 @@ fn main() {
 	loop {
 		//print!("\x1B[2J\x1B[1;1H");
 		board.print();
-		handle_move(&mut board, player);
+		if handle_move(&mut board, player) {
+			board.print();
+			break;
+		}
 		player = -player;
 	}
 }
